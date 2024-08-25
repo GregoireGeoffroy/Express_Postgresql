@@ -1,10 +1,18 @@
 const path = require('path');
 const db = require("../db/queries");
 
-// Get all usernames from the database and log them
+// Get all usernames or search for specific ones
 async function getUsernames(req, res) {
   try {
-    const usernames = await db.getAllUsernames();
+    const searchQuery = req.query.search;
+    let usernames;
+
+    if (searchQuery) {
+      usernames = await db.searchUsernames(searchQuery);
+    } else {
+      usernames = await db.getAllUsernames();
+    }
+
     console.log("Usernames: ", usernames);
     res.send("Usernames: " + usernames.map(user => user.username).join(", "));
   } catch (error) {
@@ -30,8 +38,21 @@ async function createUsernamePost(req, res) {
   }
 }
 
+// Delete all usernames from the database
+async function deleteAllUsernames(req, res) {
+  try {
+    await db.deleteAllUsernames();
+    console.log("All usernames deleted");
+    res.send("All usernames have been deleted.");
+  } catch (error) {
+    console.error("Error deleting usernames:", error);
+    res.status(500).send("Error deleting usernames");
+  }
+}
+
 module.exports = {
   getUsernames,
   createUsernameGet,
-  createUsernamePost
+  createUsernamePost,
+  deleteAllUsernames
 };
